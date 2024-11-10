@@ -1,57 +1,58 @@
-import { Injectable } from '@nestjs/common';
-import * as admin from 'firebase-admin';
-import { FirebaseService } from 'src/firebase/firebase.service';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from 'prisma/prisma.service';
+import { User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private firebaseService: FirebaseService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
-  async registerWithGoogle(token: string) {
-    const decodedToken = await this.firebaseService.verifyIdToken(token);
-    const uid = decodedToken.uid;
-
-    await this.firebaseService.assignRole(uid, 'student');
-
-    return decodedToken;
-  }
-
-  async registerWithEmailAndPassword(
+  async register(
     email: string,
     password: string,
-    role: 'admin' | 'moderator',
-  ) {
-    const userRecord = await admin.auth().createUser({
-      email,
-      password,
+    roleName: string,
+  ): Promise<User> {
+    const role = await this.prisma.role.findUnique({
+      where: { name: roleName },
     });
+    if (!role) throw new Error('Role not found');
 
-    await this.firebaseService.assignRole(userRecord.uid, role);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    return userRecord;
+    return this.prisma.user.create({
+      data: { email, password: hashedPassword, roleId: role.id },
+    });
   }
 
-  async loginWithEmailAndPassword(email: string) {
-    try {
-      const userRecord = await admin.auth().getUserByEmail(email);
-      const uid = userRecord.uid;
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ accessToken: string }> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new UnauthorizedException('invalid credentials');
 
-      //get roles
-      const userClaims = await admin.auth().getUser(uid);
-      const role = userClaims.customClaims?.role;
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid)
+      throw new UnauthorizedException('invalid credentials');
 
-      if (role === 'admin' || role === 'moderator') {
-        const customToken = await admin.auth().createCustomToken(uid);
+    const payload = { sub: user.id, role: user.roleId };
+    const accessToken = this.jwtService.sign(payload);
 
-        return {
-          message: 'Login successful',
-          customToken,
-          role,
-        };
-      } else {
-        throw new Error('Access denied');
-      }
-    } catch (err) {
-      throw new Error('Invalid email or password');
-    }
+    return { accessToken };
+  }
+
+  async validateUserRole(
+    userId: number,
+    requiredRole: string,
+  ): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true },
+    });
+    return user.role.name === requiredRole;
   }
 }
