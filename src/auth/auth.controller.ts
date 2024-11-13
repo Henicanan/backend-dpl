@@ -31,6 +31,7 @@ export class AuthController {
     @Body('email') email: string,
     @Body('password') password: string,
   ) {
-    return this.authService.login(email, password);
+    const { accessToken, role } = await this.authService.login(email, password);
+    return { accessToken, role };
   }
 }

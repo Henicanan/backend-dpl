@@ -31,8 +31,11 @@ export class AuthService {
   async login(
     email: string,
     password: string,
-  ): Promise<{ accessToken: string }> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  ): Promise<{ accessToken: string; role: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { role: true },
+    });
     if (!user) throw new UnauthorizedException('invalid credentials');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -42,7 +45,7 @@ export class AuthService {
     const payload = { sub: user.id, role: user.roleId };
     const accessToken = this.jwtService.sign(payload);
 
-    return { accessToken };
+    return { accessToken, role: user.role.name };
   }
 
   async validateUserRole(
