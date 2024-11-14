@@ -7,9 +7,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Controller('auth')
 export class AuthController {
+  prisma: PrismaService;
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
