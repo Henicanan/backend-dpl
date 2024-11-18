@@ -16,8 +16,32 @@ model User {
 }
 
 
+
 model Role {
   id Int @id @default(autoincrement())
   name String @unique
   users User[]
+}
+
+model Module {
+  id Int @id @default(autoincrement())
+  title String
+  lessons Lesson[] @relation("ModuleLessons")
+  course Course @relation("CourseModule",fields: [courseId],references: [id])
+  courseId Int
+}
+
+model Lesson {
+  id Int @id @default(autoincrement())
+  title String
+  content String
+  videoUrl String
+  module Module @relation("ModuleLessons",fields: [moduleId],references: [id])
+  moduleId Int
+}
+
+model Course {
+  id Int @id @default(autoincrement())
+  title String @unique
+  modules Module[] @relation("CourseModule")
 }
