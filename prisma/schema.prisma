@@ -24,7 +24,7 @@ model Role {
 }
 
 model Module {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
   title String
   lessons Lesson[] @relation("ModuleLessons")
   course Course @relation("CourseModule",fields: [courseId],references: [id])
@@ -32,12 +32,12 @@ model Module {
 }
 
 model Lesson {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
   title String
   content String
   videoUrl String
   module Module @relation("ModuleLessons",fields: [moduleId],references: [id])
-  moduleId Int
+  moduleId String
 }
 
 model Course {
