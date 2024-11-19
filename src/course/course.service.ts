@@ -32,4 +32,17 @@ export class CourseService {
       },
     });
   }
+
+  async getAllCourses(search?: string) {
+    return this.prisma.course.findMany({
+      where: search
+        ? {
+            title: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          }
+        : undefined,
+    });
+  }
 }
