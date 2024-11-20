@@ -45,4 +45,26 @@ export class CourseService {
         : undefined,
     });
   }
+
+  async deleteCourse(id: number) {
+    await this.prisma.lesson.deleteMany({
+      where: {
+        module: {
+          courseId: id,
+        },
+      },
+    });
+
+    await this.prisma.module.deleteMany({
+      where: {
+        courseId: id,
+      },
+    });
+
+    return this.prisma.course.delete({
+      where: {
+        id,
+      },
+    });
+  }
 }

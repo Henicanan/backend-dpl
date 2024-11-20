@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CourseService } from './course.service';
 
 @Controller('course')
@@ -33,6 +41,19 @@ export class CourseController {
       return {
         error: 'Произошла ошибка при получении курсов',
         details: error.message,
+      };
+    }
+  }
+
+  @Delete('delete-course/:id')
+  async deleteCourse(@Param('id') id: number) {
+    try {
+      const deletedCourse = await this.courseService.deleteCourse(Number(id));
+      return { message: 'Курс успешно удален', course: deletedCourse };
+    } catch (err) {
+      return {
+        error: 'Произошла ошибка при удалении курса',
+        details: err.message,
       };
     }
   }
