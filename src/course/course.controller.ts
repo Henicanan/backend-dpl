@@ -5,9 +5,11 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
+import { error } from 'console';
 
 @Controller('course')
 export class CourseController {
@@ -40,6 +42,47 @@ export class CourseController {
     } catch (error) {
       return {
         error: 'Произошла ошибка при получении курсов',
+        details: error.message,
+      };
+    }
+  }
+
+  @Get('get-course/:id')
+  async getCourse(@Param('id') id: number) {
+    try {
+      const course = await this.courseService.getCourseById(Number(id));
+      if (!course) {
+        return { error: 'Курс не найден' };
+      }
+      return { course };
+    } catch (error) {
+      return {
+        error: 'Произошла ошибка при получении курса',
+        details: error.message,
+      };
+    }
+  }
+
+  @Put('update-course/:id')
+  async updateCourse(
+    @Param('id') id: number,
+    @Body() body: { title: string; modules: any[] },
+  ) {
+    const { title, modules } = body;
+    if (!title || !modules || !Array.isArray(modules)) {
+      return { error: 'Некорректные данные' };
+    }
+
+    try {
+      const updatedCourse = await this.courseService.updateCourse(
+        id,
+        title,
+        modules,
+      );
+      return { message: 'Курс успешно обновлен', course: updatedCourse };
+    } catch (error) {
+      return {
+        error: 'Произошла ошибка при обновлении курса',
         details: error.message,
       };
     }
