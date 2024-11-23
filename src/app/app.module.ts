@@ -1,3 +1,5 @@
+import { MaterialsModule } from './../materials/materials.module';
+import { MaterialsController } from './../materials/materials.controller';
 import { ModeratorModule } from './../moderators/moderator.module';
 import { StudentsModule } from '../students/student.module';
 import { CourseModule } from './../course/course.module';
@@ -8,6 +10,7 @@ import { PrismaModule } from 'prisma/prisma.module';
 
 @Module({
   imports: [
+    MaterialsModule,
     ModeratorModule,
     StudentsModule,
     CourseModule,
