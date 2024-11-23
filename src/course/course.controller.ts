@@ -9,7 +9,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
-import { error } from 'console';
 
 @Controller('course')
 export class CourseController {
@@ -41,7 +40,6 @@ export class CourseController {
       return { courses };
     } catch (error) {
       return {
-        error: 'Произошла ошибка при получении курсов',
         details: error.message,
       };
     }
@@ -86,6 +84,16 @@ export class CourseController {
         details: error.message,
       };
     }
+  }
+
+  @Delete('delete-lesson/:id')
+  async deleteLesson(@Param('id') lessonId: string) {
+    return this.courseService.deleteLesson(lessonId);
+  }
+
+  @Delete('delete-module/:id')
+  async deleteModule(@Param('id') id: string) {
+    return this.courseService.deleteModule(id);
   }
 
   @Delete('delete-course/:id')

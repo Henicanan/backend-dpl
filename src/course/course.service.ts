@@ -34,7 +34,7 @@ export class CourseService {
   }
 
   async getAllCourses(search?: string) {
-    return this.prisma.course.findMany({
+    const courses = this.prisma.course.findMany({
       where: search
         ? {
             title: {
@@ -44,6 +44,8 @@ export class CourseService {
           }
         : undefined,
     });
+    console.log(courses);
+    return courses;
   }
 
   async getCourseById(id: number) {
@@ -101,6 +103,22 @@ export class CourseService {
             lessons: true,
           },
         },
+      },
+    });
+  }
+
+  async deleteLesson(lessonId: string) {
+    return this.prisma.lesson.delete({
+      where: {
+        id: lessonId,
+      },
+    });
+  }
+
+  async deleteModule(moduleId: string) {
+    return this.prisma.module.delete({
+      where: {
+        id: moduleId,
       },
     });
   }
